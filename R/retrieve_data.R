@@ -1,17 +1,17 @@
 
-# This function takes three parameters: knack base url, api,id, and api_key
-# The base url should specify which records are being retrieved
+# This function takes three parameters: object, api_id, api_key
 retrieve_data <-
-  function(base_url,
+  function(object,
            api_id,
-           api_key
-           ) {
-
+           api_key) {
     # Load dependent packages
     library(jsonlite)
     library(httr)
     library(dplyr)
     library(stringr)
+
+    api_base <-
+      paste0("https://api.knack.com/v1/objects/", object, "/records")
 
     # First determine the number of pages
     result <- GET(
@@ -24,9 +24,22 @@ retrieve_data <-
     n_pages <- fromJSON(content(result, as = "text"))$total_pages
     data <- fromJSON(content(result, as = "text"))$records
 
+    # Create a function to clean html tags
+    dropHTMLTags <- function(column) {
+      if (any(grepl(">.+<", column))) {
+        result <- str_remove_all(str_extract(column, ">.+<"), "[><]")
+      } else {
+        result <- column
+      }
+      result
+    }
+
     # If there is only one page then stop
     if (n_pages == 1) {
-      return (data)
+      clean_data <- data %>%
+        select(!contains("raw")) %>%
+        mutate_all(dropHTMLTags)
+      return (clean_data)
     }
 
 
@@ -44,16 +57,6 @@ retrieve_data <-
 
     }
 
-    # Create a function to clean html tags
-    dropHTMLTags <- function(column) {
-      if (any(grepl(">.+<", column))) {
-        result <- str_remove_all(str_extract(column, ">.+<"), "[><]")
-      } else {
-        result <- column
-      }
-      result
-    }
-
     # Select only rows that are not "raw" and clean the html tags
     clean_data <- data %>%
       select(!contains("raw")) %>%
@@ -65,3 +68,6 @@ retrieve_data <-
 
   }
 
+retrieve_data("object_5",
+              "60a2a841ac3064001b208e21",
+              "f7397923-c85f-4391-af98-463f47bb20dd")
