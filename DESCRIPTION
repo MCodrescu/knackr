@@ -1,12 +1,14 @@
 Package: knackr
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Facilities Remote Connection to Knack Databases
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Marcus Codrescu
+Maintainer: Marcus Codrescu <m.codrescu@outlook.com>
+Description: knackr take the api documentation from the knack databases
+    and converts it into simplified R code for easy data retrieval.
+    Data can be retrieved as a whole or filters can be sent to the knack
+    API to retrieve only a specified subset of data.
+License: Open License
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/MCodrescu/knackr
