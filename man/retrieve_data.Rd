@@ -16,11 +16,13 @@ retrieve_data(object, api_id, api_key, include_raw = FALSE)
 \item{include_raw}{A logical value saying whether or not raw field values should be included. Default is no. Note that links and image files are only included in raw fields.}
 }
 \value{
-
+A data frame (tibble)
 }
 \description{
 Connect R and Knack
 }
 \examples{
+\dontrun{
 retrieve_data('object_23','YOUR_API_ID','YOUR_API_KEY')
+}
 }

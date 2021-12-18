@@ -18,11 +18,14 @@
 #' @importFrom dplyr contains
 #' @importFrom dplyr bind_rows
 #'
-#' @return
+#' @return A data frame (tibble)
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' retrieve_data('object_23','YOUR_API_ID','YOUR_API_KEY')
+#' }
+
 retrieve_data <-
   function(object,
            api_id,
