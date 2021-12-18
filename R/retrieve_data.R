@@ -1,9 +1,16 @@
 
-# This function takes three parameters: object, api_id, api_key
+
+
+# Function parameters: object, api_id, api_key, include_raw
+# object - which knack object should be retrieved
+# api_id/api_key - unique authentication identifiers
+# include_raw - should raw values be included? default is no.
+#   links and image files are only included with raw data
 retrieve_data <-
   function(object,
            api_id,
-           api_key) {
+           api_key,
+           include_raw = FALSE) {
     # Load dependent packages
     library(jsonlite)
     library(httr)
@@ -36,6 +43,11 @@ retrieve_data <-
 
     # If there is only one page then stop
     if (n_pages == 1) {
+      # If raw is to be included
+      if (include_raw) {
+        return (data)
+      }
+      # Return the cleaned data
       clean_data <- data %>%
         select(!contains("raw")) %>%
         mutate_all(dropHTMLTags)
@@ -43,7 +55,7 @@ retrieve_data <-
     }
 
 
-    # Otherwise, loop through the pages to get all the data
+    # If more than 1000 records, loop through the pages to get all the data
     for (i in 2:n_pages) {
       result <- GET(
         paste0(api_base, "?rows_per_page=1000&page=", i),
@@ -57,6 +69,12 @@ retrieve_data <-
 
     }
 
+    # Return raw data if specified
+    if (include_raw) {
+      return(data %>%
+               mutate_all(dropHTMLTags))
+    }
+
     # Select only rows that are not "raw" and clean the html tags
     clean_data <- data %>%
       select(!contains("raw")) %>%
@@ -67,7 +85,3 @@ retrieve_data <-
     return (clean_data)
 
   }
-
-retrieve_data("object_5",
-              "60a2a841ac3064001b208e21",
-              "f7397923-c85f-4391-af98-463f47bb20dd")
