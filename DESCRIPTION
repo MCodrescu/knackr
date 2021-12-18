@@ -8,7 +8,7 @@ Description: knackr take the api documentation from the knack databases
     and converts it into simplified R code for easy data retrieval.
     Data can be retrieved as a whole or filters can be sent to the knack
     API to retrieve only a specified subset of data.
-License: Open License
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/MCodrescu/knackr
