@@ -6,10 +6,23 @@
 #' @param api_key A string containing the API Key which can be found on the Knack Builder Site under API & Code
 #' @param include_raw A logical value saying whether or not raw field values should be included. Default is no. Note that links and image files are only included in raw fields.
 #'
+#' @importFrom magrittr %>%
+#' @importFrom httr GET
+#' @importFrom httr add_headers
+#' @importFrom httr content
+#' @importFrom jsonlite fromJSON
+#' @importFrom stringr str_remove_all
+#' @importFrom stringr str_extract
+#' @importFrom dplyr select
+#' @importFrom dplyr mutate_all
+#' @importFrom dplyr contains
+#' @importFrom dplyr bind_rows
+#'
 #' @return
 #' @export
 #'
 #' @examples
+#' retrieve_data('object_23','YOUR_API_ID','YOUR_API_KEY')
 retrieve_data <-
   function(object,
            api_id,
@@ -20,20 +33,20 @@ retrieve_data <-
       paste0("https://api.knack.com/v1/objects/", object, "/records")
 
     # First determine the number of pages
-    result <- httr::GET(
+    result <- GET(
       paste0(api_base, "?rows_per_page=1000"),
-      httr::add_headers(
+      add_headers(
         "X-Knack-Application-Id" = api_id,
         "X-Knack-REST-API-Key" = api_key
       )
     )
-    n_pages <- jsonlite::fromJSON(httr::content(result, as = "text"))$total_pages
-    data <- jsonlite::fromJSON(httr::content(result, as = "text"))$records
+    n_pages <- fromJSON(content(result, as = "text"))$total_pages
+    data <- fromJSON(content(result, as = "text"))$records
 
     # Create a function to clean html tags
     dropHTMLTags <- function(column) {
       if (any(grepl(">.+<", column))) {
-        result <- stringr::str_remove_all(stringr::str_extract(column, ">.+<"), "[><]")
+        result <- str_remove_all(str_extract(column, ">.+<"), "[><]")
       } else {
         result <- column
       }
@@ -48,36 +61,36 @@ retrieve_data <-
       }
       # Return the cleaned data
       clean_data <- data %>%
-        dplyr::select(!dplyr::contains("raw")) %>%
-        dplyr::mutate_all(dropHTMLTags)
+        select(!contains("raw")) %>%
+        mutate_all(dropHTMLTags)
       return (clean_data)
     }
 
 
     # If more than 1000 records, loop through the pages to get all the data
     for (i in 2:n_pages) {
-      result <- httr::GET(
+      result <- GET(
         paste0(api_base, "?rows_per_page=1000&page=", i),
-        httr::add_headers(
+        add_headers(
           "X-Knack-Application-Id" = api_id,
           "X-Knack-REST-API-Key" = api_key
         )
       )
       data <- data %>%
-        dplyr::bind_rows(jsonlite::fromJSON(httr::content(result, as = "text"))$records)
+        bind_rows(fromJSON(content(result, as = "text"))$records)
 
     }
 
     # Return raw data if specified
     if (include_raw) {
       return(data %>%
-               dplyr::mutate_all(dropHTMLTags))
+               mutate_all(dropHTMLTags))
     }
 
     # Select only rows that are not "raw" and clean the html tags
     clean_data <- data %>%
-      dplyr::select(!dplyr::contains("raw")) %>%
-      dplyr::mutate_all(dropHTMLTags)
+      select(!contains("raw")) %>%
+      mutate_all(dropHTMLTags)
 
 
     # Return the result
