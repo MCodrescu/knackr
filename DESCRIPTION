@@ -1,6 +1,6 @@
 Package: knackr
 Type: Package
-Title: Facilities Remote Connection to Knack Databases
+Title: Facilitates Remote Connection to Knack Databases
 Version: 0.1.0
 Author: Marcus Codrescu
 Maintainer: Marcus Codrescu <m.codrescu@outlook.com>
