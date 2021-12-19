@@ -77,7 +77,7 @@ retrieve_filtered_data <-
 retrieve_filtered_data(
   "object_2",
   api_id = "61be439ed60d72001e68d749",
-  api_key = ,
+  api_key = rstudioapi::askForPassword(),
   filter_field = "field_6",
   match = "or",
   operator = "contains",
