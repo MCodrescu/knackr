@@ -2,16 +2,12 @@
 % Please edit documentation in R/retrieve_data.R
 \name{retrieve_data}
 \alias{retrieve_data}
-\title{Connect R and Knack}
+\title{Retrieve Records From Knack}
 \usage{
-retrieve_data(object, api_id, api_key, include_raw = FALSE)
+retrieve_data(object, include_raw = FALSE)
 }
 \arguments{
-\item{object}{A string containing the knack object for which to retreive data ex: 'object_23'}
-
-\item{api_id}{A string containing the API ID which can be found on the Knack Builder Site under API & Code}
-
-\item{api_key}{A string containing the API Key which can be found on the Knack Builder Site under API & Code}
+\item{object}{A string containing the knack object for which to retrieve data ex: 'object_23'}
 
 \item{include_raw}{A logical value saying whether or not raw field values should be included. Default is no. Note that links and image files are only included in raw fields.}
 }
@@ -19,7 +15,7 @@ retrieve_data(object, api_id, api_key, include_raw = FALSE)
 A data frame (tibble)
 }
 \description{
-Connect R and Knack
+Retrieve Records From Knack
 }
 \examples{
 \dontrun{
