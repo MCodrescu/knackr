@@ -44,12 +44,8 @@ list_fields <- function(object, details = FALSE) {
   # Return details if desired
   if (details) {
     return (data)
-  } else if (is.null(data$fields$relationship[3])) {
-    return(data$fields[c(1, 2, 4)])
   } else {
-    return (cbind(data$fields[c(1, 2, 4)], data$fields$relationship[3]))
-
+    return(data$fields[c(1, 2, 4)])
   }
-
 
 }

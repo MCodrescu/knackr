@@ -5,7 +5,10 @@ output: github_document
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(
+library(knitr)
+library(magrittr)
+library(knackr)
+opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
@@ -29,18 +32,76 @@ You can install the development version of knackr from [GitHub](https://github.c
 devtools::install_github("MCodrescu/knackr")
 ```
 
-## Example
+## Set Credentials
 
-This is a basic example which shows you how to retrieve data from knack database.
-The API ID and API Key shown are for demonstration purposes only and not active.
+Before interacting with the database, set your API credentials in the R session.
 
 ```{r example}
-library(knackr)
-data <- retrieve_data("object_2",
-              api_id = "61be439ed60d72001e68d749",
-              api_key = "66f9d76a-093b-4b80-966e-efbd03d0ce6c")
-
-knitr::kable(head(data))
+set_credentials(api_id = "61c0f74e19a523001ebd097a",
+              api_key = "043bdc89-ec4d-4add-bcbb-bdda171192dd")
 ```
+
+## List Objects
+
+You can list the objects present in a database by using the `list_objects()` function.
+
+``` {r list-objects}
+list_objects() %>%
+  kable()
+```
+
+## List Fields
+
+You can also list the fields present in an object using `list_fields(object)` or list every field in the database using `sapply`.
+
+``` {r list-fields}
+# List fields of a single object
+list_fields("object_2") %>%
+  kable()
+
+# List fields of every object
+objects <- list_objects()
+database <- sapply(objects$key, list_fields)
+```
+## Retrieve Records
+You can retrieve records from the database using `retrieve_records`. By default, `retrieve_records` returns the entire object but you can specify a subset of the data using filters. For a complete list of possible filters refer to the [Knack Documentation](https://docs.knack.com/docs/filters-field-types).
+
+```{r retrieve-all}
+# Retrieve all records from an object
+retrieve_records("object_2") %>%
+  head() %>%
+  kable()
+```
+### Retrieve records according to a single condition.
+This example retrieves only those records that contain the word 'Updated' in field 2.
+```{r filter1}
+retrieve_records("object_2",
+                  filter_field = "field_2",
+                  operator = "contains",
+                  value = "Updated") %>%
+  kable()
+```
+### Retrieve records within a data range. 
+This example retrieves only records with dates in field 34 between July 1, 2017 and August 31, 2017. Note that dates must be in the 'YYYY-MM-DD' format.
+
+```{r filter2}
+retrieve_records("object_2",
+                  filter_field = "field_34",
+                  operator = c("is after","is before"),
+                  value = c('2017-07-01','2021-08-31')) %>%
+  kable()
+```
+### Retrieve records according to multiple field conditions
+This example retrieves records according to two conditions: field 35 is 'No' and field 34 is after July 1, 2017. You can substitute 'and' with 'or' if you would like at least one condition to be true and not all.
+```{r filter3}
+retrieve_records("object_2",
+                  filter_field = c("field_35","field_34"),
+                  match = "and",
+                  operator = c("is","is after"),
+                  value = c("No","2017-07-01")) %>%
+  kable()
+```
+
+
 
 
