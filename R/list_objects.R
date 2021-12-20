@@ -10,8 +10,7 @@
 #'
 #' @examples
 #' tail(list_objects())
-list_objects <- function(){
-
+list_objects <- function() {
   # Check to see if Knack API credentials are set
   if (is.null(getOption("api_id")) |
       is.null(getOption("api_key"))) {
@@ -19,11 +18,12 @@ list_objects <- function(){
   }
 
   # Retrieve Objects
-  response <- GET("https://api.knack.com/v1/objects/",
-                  add_headers(
-                    "X-Knack-Application-Id" = getOption("api_id"),
-                    "X-Knack-REST-API-Key" = getOption("api_key")
-                  )
+  response <- GET(
+    "https://api.knack.com/v1/objects/",
+    add_headers(
+      "X-Knack-Application-Id" = getOption("api_id"),
+      "X-Knack-REST-API-Key" = getOption("api_key")
+    )
   )
-  fromJSON(content(response, type = "text"))
+  fromJSON(content(response, type = "text", encoding = "UTF-8"))$objects
 }
