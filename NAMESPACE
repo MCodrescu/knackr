@@ -2,6 +2,7 @@
 
 export(retrieve_data)
 export(retrieve_filtered_data)
+export(set_credentials)
 importFrom(dplyr,bind_rows)
 importFrom(dplyr,contains)
 importFrom(dplyr,mutate_all)
