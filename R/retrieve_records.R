@@ -128,7 +128,7 @@ retrieve_records <-
     data <- fromJSON(content(result, as = "text"))$records
 
     # If there is only one page then stop
-    if (n_pages == 1) {
+    if (n_pages == 1 | limit < 1000) {
       # If raw is to be included
       if (include_raw) {
         return (data)
