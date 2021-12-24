@@ -2,6 +2,7 @@
 
 export(list_fields)
 export(list_objects)
+export(n_records)
 export(retrieve_records)
 export(set_credentials)
 importFrom(dplyr,bind_rows)
