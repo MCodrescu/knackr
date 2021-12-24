@@ -10,7 +10,8 @@ retrieve_records(
   filter_field = "",
   match = "and",
   operator = "is",
-  value = ""
+  value = "",
+  limit = 1000
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ is before today, is after today, is before current time, is after current time, 
 Note that dates must be in the format 'YYYY-MM-DD'}
 
 \item{value}{A character vector containing the values the operator uses to filter by.}
+
+\item{limit}{The number of records to include per page. The default is 1000.}
 }
 \value{
 A data frame of filtered records.

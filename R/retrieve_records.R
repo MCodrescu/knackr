@@ -11,6 +11,7 @@
 #'     is before today, is after today, is before current time, is after current time, is lower than, is higher than.
 #'     Note that dates must be in the format 'YYYY-MM-DD'
 #' @param value A character vector containing the values the operator uses to filter by.
+#' @param limit The number of records to include per page. The default is 1000.
 #'
 #' @importFrom magrittr %>%
 #' @importFrom httr GET
@@ -64,7 +65,8 @@ retrieve_records <-
            filter_field = "",
            match = "and",
            operator = "is",
-           value = "") {
+           value = "",
+           limit = 1000) {
     # Check to see if Knack API credentials are set
     if (is.null(getOption("api_id")) |
         is.null(getOption("api_key"))) {
@@ -75,7 +77,7 @@ retrieve_records <-
     api_url <-
       paste0("https://api.knack.com/v1/objects/",
              object,
-             "/records?rows_per_page=1000")
+             "/records?rows_per_page=",limit)
 
     # Create a function to clean html tags
     dropHTMLTags <- function(column) {
