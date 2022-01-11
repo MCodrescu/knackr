@@ -6,20 +6,20 @@
 \usage{
 retrieve_records(
   object,
-  include_raw = FALSE,
   filter_field = "",
+  value = "",
   match = "and",
   operator = "is",
-  value = "",
+  include_raw = FALSE,
   limit = 1000
 )
 }
 \arguments{
 \item{object}{A string containing the Knack object to pull data from. Ex: 'object_2'}
 
-\item{include_raw}{A logical stating whether raw fields should be included. Links are only included in raw fields.}
-
 \item{filter_field}{A character vector of fields to filter. Can be one or more fields.}
+
+\item{value}{A character vector containing the values the operator uses to filter by.}
 
 \item{match}{A string containing either 'and' or 'or'. This will determine whether the records retrieved match all filters or at least one.}
 
@@ -30,7 +30,7 @@ is after the next, is before, is after, is today, is today or before, is today o
 is before today, is after today, is before current time, is after current time, is lower than, is higher than.
 Note that dates must be in the format 'YYYY-MM-DD'}
 
-\item{value}{A character vector containing the values the operator uses to filter by.}
+\item{include_raw}{A logical stating whether raw fields should be included. Links are only included in raw fields.}
 
 \item{limit}{The number of records to include per page. The default is 1000.}
 }
