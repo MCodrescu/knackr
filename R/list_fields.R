@@ -41,6 +41,12 @@ list_fields <- function(object, details = FALSE) {
       response, type = "text", encoding = "UTF-8"
     )))
 
+
+  column_labels <-
+    str_replace_all(str_to_lower(data$fields$label), " ", "_")
+
+  data$fields$label <- column_labels
+
   # Return details if desired
   if (details) {
     return (data)
