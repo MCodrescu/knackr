@@ -8,8 +8,8 @@ retrieve_records(
   object,
   filter_field = "",
   value = "",
-  match = "and",
   operator = "is",
+  match = "and",
   include_raw = FALSE,
   limit = 1000
 )
@@ -21,14 +21,14 @@ retrieve_records(
 
 \item{value}{A character vector containing the values the operator uses to filter by.}
 
-\item{match}{A string containing either 'and' or 'or'. This will determine whether the records retrieved match all filters or at least one.}
-
 \item{operator}{The character vector containing the operator for the filters. Options include:
 contains, does not contain, is, is not, starts with, ends with, is blank, is not blank,
 is during the current, is during the previous, is during the next, is before the previous,
 is after the next, is before, is after, is today, is today or before, is today or after,
 is before today, is after today, is before current time, is after current time, is lower than, is higher than.
 Note that dates must be in the format 'YYYY-MM-DD'}
+
+\item{match}{A string containing either 'and' or 'or'. This will determine whether the records retrieved match all filters or at least one.}
 
 \item{include_raw}{A logical stating whether raw fields should be included. Links are only included in raw fields.}
 
