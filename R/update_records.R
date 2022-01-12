@@ -6,9 +6,15 @@
 #'
 #' @importFrom httr PUT
 #' @importFrom httr add_headers
+#' @importFrom httr content
 #' @importFrom httr http_error
 #' @importFrom httr http_status
 #' @importFrom jsonlite toJSON
+#' @importFrom jsonlite fromJSON
+#' @importFrom magrittr %>%
+#' @importFrom magrittr %$%
+#' @importFrom dplyr filter
+#' @importFrom dplyr pull
 #'
 #' @return A http status message.
 #' @export
@@ -27,17 +33,34 @@ update_records <- function(object, record_id, data) {
     return (print("Please set API credentials using set_credentials."))
   }
 
-  # Determine field labels and keys from object
+  # Get all objects
+  objects <- list_objects()
+
+  # Get all fields
   fields <- list_fields(object)
+  fields_detailed <- list_fields(object, details = TRUE)[[1]]
+
+  # Retrieve the column names and keys
+  column_labels <- fields$label
+  column_keys <- fields$key
+
+  # Get the label length of columns
+  label_length <- length(column_labels)
+
+  # Change the columns to undercase and replace
+  # white space with underline
+  column_labels <-
+    str_replace_all(str_to_lower(column_labels), " ", "_")
+
 
   # Check to see if columns in the given data frame are actual fields in the object
   # rename columns to field number
   columns <- colnames(data)
   for (i in 1:length(columns)) {
-    if (columns[i] %in% fields$key) {
+    if (columns[i] %in% column_keys) {
       next
-    } else if (columns[i] %in% fields$label) {
-      columns[i] <- fields$key[match(columns[i], fields$label)]
+    } else if (columns[i] %in% column_labels) {
+      columns[i] <- column_keys[match(columns[i], column_labels)]
       next
     } else{
       return(paste0("'", columns[i], "' is not a field in ", object))
@@ -51,6 +74,58 @@ update_records <- function(object, record_id, data) {
 
   # Set the correct field names
   colnames(data) <- columns
+
+  # Change filter fields of connected records to their id
+  for (i in 1:length(columns)) {
+    fields_detailed %>%
+      filter(key == columns[i]) %>%
+      pull(type) ->
+      type
+
+
+    if (type == "connection") {
+      fields_detailed %>%
+        filter(key == columns[i]) %$%
+        relationship %$%
+        object ->
+        parent_object
+
+      # Create a vector of column values
+      column_name <- columns[i]
+      value <- data[,column_name]
+
+      # Get the records
+      result <- GET(
+        paste0(
+          "https://api.knack.com/v1/objects/",
+          parent_object,
+          "/records?rows_per_page=",
+          1000
+        ),
+        add_headers(
+          "X-Knack-Application-Id" = getOption("api_id"),
+          "X-Knack-REST-API-Key" = getOption("api_key")
+        )
+      )
+
+      connected_data <- fromJSON(content(result, as = "text"))$records
+
+      # Find where the connected record is
+      j <- grep(value, connected_data)[1]
+      x <- grep(value, connected_data[, j])[1]
+
+
+      connected_id <- connected_data$id[x]
+
+      # Plug in the connected record id
+      value <- connected_id
+
+
+      data[,column_name] <- value
+
+    }
+  }
+
 
   # Create JSON data
   data_json <- toJSON(as.list(data), auto_unbox = TRUE)
