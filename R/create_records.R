@@ -11,8 +11,11 @@
 #' @importFrom httr http_error
 #' @importFrom httr http_status
 #' @importFrom jsonlite toJSON
-#' @importFrom utils setTxtProgressBar
-#' @importFrom utils txtProgressBar
+#' @importFrom jsonlite fromJSON
+#' @importFrom magrittr %>%
+#' @importFrom magrittr %$%
+#' @importFrom dplyr filter
+#' @importFrom dplyr pull
 #'
 #' @return A status message. Ex: 'Success: (200) OK'
 #' @export
@@ -38,30 +41,34 @@ create_records <- function(object, data) {
     return (print("Please set API credentials using set_credentials."))
   }
 
-  # Set uploading estimate
-  if (nrow(data) > 5){
-    print.default(quote = FALSE, paste("Uploading... estimated:",round(nrow(data)*5/60, digits = 2),"minutes"))
-  }
+  # Get all objects
+  objects <- list_objects()
 
-  # Create a progress bar
-  pb <- txtProgressBar(min = 0,
-                       max = nrow(data),
-                       style = 3,
-                       width = 50,
-                       char = "=")
-
-
-  # Determine field labels and keys from object
+  # Get all fields
   fields <- list_fields(object)
+  fields_detailed <- list_fields(object, details = TRUE)[[1]]
+
+  # Retrieve the column names and keys
+  column_labels <- fields$label
+  column_keys <- fields$key
+
+  # Get the label length of columns
+  label_length <- length(column_labels)
+
+  # Change the columns to undercase and replace
+  # white space with underline
+  column_labels <-
+    str_replace_all(str_to_lower(column_labels), " ", "_")
+
 
   # Check to see if columns in the given data frame are actual fields in the object
   # rename columns to field number
   columns <- colnames(data)
   for (i in 1:length(columns)) {
-    if (columns[i] %in% fields$key) {
+    if (columns[i] %in% column_keys) {
       next
-    } else if (columns[i] %in% fields$label) {
-      columns[i] <- fields$key[match(columns[i], fields$label)]
+    } else if (columns[i] %in% column_labels) {
+      columns[i] <- column_keys[match(columns[i], column_labels)]
       next
     } else{
       return(paste0("'", columns[i], "' is not a field in ", object))
@@ -75,6 +82,59 @@ create_records <- function(object, data) {
 
   # Set the correct field names
   colnames(data) <- columns
+
+  # Change filter fields of connected records to their id
+  for (i in 1:length(columns)) {
+    fields_detailed %>%
+      filter(key == columns[i]) %>%
+      pull(type) ->
+      type
+
+
+    if (type == "connection") {
+      fields_detailed %>%
+        filter(key == columns[i]) %$%
+        relationship %$%
+        object ->
+        parent_object
+
+      # Create a vector of column values
+      column_name <- columns[i]
+      values <- data[,column_name]
+
+      # Get the records
+      result <- GET(
+        paste0(
+          "https://api.knack.com/v1/objects/",
+          parent_object,
+          "/records?rows_per_page=",
+          1000
+        ),
+        add_headers(
+          "X-Knack-Application-Id" = getOption("api_id"),
+          "X-Knack-REST-API-Key" = getOption("api_key")
+        )
+      )
+
+      connected_data <- fromJSON(content(result, as = "text"))$records
+
+      for (v in 1:length(values)){
+
+        # Find where the connected record is
+        j <- grep(values[v], connected_data)[1]
+        x <- grep(values[v], connected_data[, j])[1]
+
+        connected_id <- connected_data$id[x]
+
+        # Plug in the connected record id
+        values[v] <- connected_id
+      }
+
+      data[,column_name] <- values
+
+    }
+  }
+
 
   # Post data one record at a time
   for (i in 1:nrow(data)) {
@@ -95,17 +155,12 @@ create_records <- function(object, data) {
 
     #If error then stop and return error
     if (http_error(result)) {
-      close(pb)
       return (http_status(result)$message)
     }
-
-    # Add tick to progress bar
-    setTxtProgressBar(pb, i)
 
   }
 
   # Return the result
-  close(pb)
   http_status(result)$message
 
 }
