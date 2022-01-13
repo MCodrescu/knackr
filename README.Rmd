@@ -52,7 +52,7 @@ list_objects() %>%
 
 ## List Fields
 
-You can also list the fields present in an object using `list_fields(object)` or list every field in the database using `sapply`. `list_fields` will automatically change field labels to under case without white space.
+You can also list the fields present in an object using `list_fields(object)` or list every field in the database using `sapply`. The `list_fields` function will automatically convert field labels to under-case and eliminate any white space.
 
 ``` {r list-fields}
 # List fields of a single object
@@ -102,7 +102,7 @@ retrieve_records("object_2",
 ```
 
 ### Retrieve connected records
-You can also set filters according to connected record fields without a problem. Notice that field 22, `contact`, is a connection. We can see what object it connects to using `list_fields("object_2", details = TRUE)` and the `unnest` function from the `tidyr` package.
+You can also set filters according to connected record fields without a problem. Notice that `field_22`, `contact`, is a connection field. We can see what object it connects to using `list_fields("object_2", details = TRUE)` and the `unnest` function from the `tidyr` package.
 
 ```{r filter4}
 list_fields("object_2", details = TRUE) %>%
@@ -110,14 +110,14 @@ list_fields("object_2", details = TRUE) %>%
   kable()
 ```
 
-We can see that `contact` connects with object_1. We can retrieve the records of object_1 to see what it holds.
+We can see that `contact` connects with `object_1`. We can retrieve the records of `object_1` to see what it holds.
 
 ```{r filter5}
 retrieve_records("object_1") %>%
   kable()
 ```
 
-We can now use any of the above fields when we create filters for object_2. For example, let's search object 2 for only those records connected to 'Linda DeCastro'.
+We can now use any of the above fields when we create filters for `object_2`. For example, let's search `object_2` for only those records connected to 'Linda DeCastro'.
 
 ```{r filter6}
 retrieve_records("object_2",
@@ -131,7 +131,7 @@ We can update records in the knack database using the `update_records` function.
 
 ```{r update1}
 update_records("object_2",
-               "61c0f751333f060721564c85",
+               "61c0f751333f060721564c8b",
                data.frame(add_task_or_meeting = "Yes"))
 ```
 The result is an http status message. We see that the update was successful but let's pull the record again to double check.
@@ -156,7 +156,7 @@ retrieve_records("object_2",
   record_3
 
 delete_records("object_2",
-               "61c0f751333f060721564c85")
+               "61c0f751333f060721564c8b")
 
 ```
 We can retrieve the records again to see that it was successfully deleted.
@@ -167,7 +167,7 @@ retrieve_records("object_2",
                  "Linda DeCastro") %>%
   kable()
 ```
-You can also delete many records at once using `sapply`. Suppose you had a vector of record ids you wanted to delete; let's call it `duplicated_ids`. You can delete them like so:
+You can also delete many records at once using `sapply`. Suppose you had a vector of record ids you wanted to delete called `duplicated_ids`. You can delete them all like so:
 
 ```{r delete3, eval = FALSE}
 # Not run
@@ -177,7 +177,7 @@ sapply(duplicated_ids, function(x){
 ```
 
 ## Create Records
-Lastly, you can create new records using the `create_records` function. You provide the object number and a data frame of new records where the column names match the field labels in the object. For example, let's put back the record that we delete earlier but saved in the data frame `record_3`.
+Lastly, you can create new records using the `create_records` function. You provide the object number and a data frame of new records where the column names match the field labels in the object. For example, let's put back the record that we deleted earlier but saved in the data frame `record_3`.
 
 ```{r create1}
 kable(record_3[,2:11])

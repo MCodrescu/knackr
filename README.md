@@ -52,8 +52,8 @@ list_objects() %>%
 
 You can also list the fields present in an object using
 `list_fields(object)` or list every field in the database using
-`sapply`. `list_fields` will automatically change field labels to under
-case without white space.
+`sapply`. The `list_fields` function will automatically convert field
+labels to under-case and eliminate any white space.
 
 ``` r
 # List fields of a single object
@@ -145,7 +145,7 @@ retrieve_records("object_2",
 | 61c0f751333f060721564c9b | 08/02/2017 | Confirmed through email that they are no longer interested | No                  |                 |                        |                       | NA             | Pending     |             | Mary Smith      |
 | 61c0f751333f060721564c99 | 07/26/2017 | Didn’t show up for first meeting                           | No                  |                 |                        |                       | NA             | Pending     |             | Mary Smith      |
 | 61c0f751333f060721564c95 | 07/02/2017 | Updated pipeline status to “Customer/Won”                  | No                  |                 |                        |                       | Dave Myers     | Pending     |             | Johnny Gonzalez |
-| 61c0f751333f060721564c8b | 07/02/2017 | Want to be sure to communicate weekly.                     | Yes                 | Meeting         | Meetup                 | 07/06/2017            | Linda DeCastro | Pending     |             | Johnny Gonzalez |
+| 61c0f751333f060721564c8b | 07/02/2017 | Want to be sure to communicate weekly.                     | No                  | Meeting         | Meetup                 | 07/06/2017            | Linda DeCastro | Pending     |             | Johnny Gonzalez |
 
 ### Retrieve records according to multiple field conditions
 
@@ -178,13 +178,13 @@ retrieve_records("object_2",
 | 61c0f751333f060721564c97 | 04/20/2017 | Updated pipeline status to “Proposal”                      | No                  |                 |                        |                       | Tim Smith      | Pending     |             | Johnny Gonzalez |
 | 61c0f751333f060721564c95 | 07/02/2017 | Updated pipeline status to “Customer/Won”                  | No                  |                 |                        |                       | Dave Myers     | Pending     |             | Johnny Gonzalez |
 | 61c0f751333f060721564c8f | 05/02/2017 | Updated pipeline status to “Proposal”                      | No                  |                 |                        | 12/20/2021 4:36pm     | Dave Myers     | Completed   |             | Johnny Gonzalez |
-| 61c0f751333f060721564c8b | 07/02/2017 | Want to be sure to communicate weekly.                     | Yes                 | Meeting         | Meetup                 | 07/06/2017            | Linda DeCastro | Pending     |             | Johnny Gonzalez |
+| 61c0f751333f060721564c8b | 07/02/2017 | Want to be sure to communicate weekly.                     | No                  | Meeting         | Meetup                 | 07/06/2017            | Linda DeCastro | Pending     |             | Johnny Gonzalez |
 
 ### Retrieve connected records
 
 You can also set filters according to connected record fields without a
-problem. Notice that field 22, `contact`, is a connection. We can see
-what object it connects to using
+problem. Notice that `field_22`, `contact`, is a connection field. We
+can see what object it connects to using
 `list_fields("object_2", details = TRUE)` and the `unnest` function from
 the `tidyr` package.
 
@@ -207,8 +207,8 @@ list_fields("object_2", details = TRUE) %>%
 | task_update            | field_51 | FALSE    | paragraph_text  | NULL                                                                                           | NA         | NA  | NA       |
 | sales_rep              | field_58 | FALSE    | connection      | NULL                                                                                           | many       | one | object_5 |
 
-We can see that `contact` connects with object_1. We can retrieve the
-records of object_1 to see what it holds.
+We can see that `contact` connects with `object_1`. We can retrieve the
+records of `object_1` to see what it holds.
 
 ``` r
 retrieve_records("object_1") %>%
@@ -225,7 +225,7 @@ retrieve_records("object_1") %>%
 | 61c0f751333f060721564c7f | Sarah Williams | google.com              | 07/02/2017              | VP of Operations     | H&E Analytics    | Tech         | 7768 West Drive Of Oakley<br />Fresno, CA 93102 | \(219\) 504-8872 | <sarah@heanalytics.com> | Lead         | www.heanalytics.com       | www.sample.com   | Running operations for five years.                     | Mary Smith      | 0.00   |                                     |                                                                                                   |                   |            |                                |
 
 We can now use any of the above fields when we create filters for
-object_2. For example, let’s search object 2 for only those records
+`object_2`. For example, let’s search `object_2` for only those records
 connected to ‘Linda DeCastro’.
 
 ``` r
@@ -239,7 +239,7 @@ retrieve_records("object_2",
 |:-------------------------|:-----------|:---------------------------------------|:--------------------|:----------------|:-----------------------|:----------------------|:---------------|:------------|:------------|:----------------|
 | 61e08ee5b3a1c7a44a6f825f | 06/13/2017 | Demo went really well                  | Yes                 | Meeting         | Tech Demo              |                       | Linda DeCastro | Completed   |             | Johnny Gonzalez |
 | 61e08586100f415129d8f8f7 | 06/30/2017 | Updated pipeline status to “Proposal”  | Yes                 |                 |                        | 12/20/2021 4:36pm     | Linda DeCastro | Pending     |             | Johnny Gonzalez |
-| 61c0f751333f060721564c8b | 07/02/2017 | Want to be sure to communicate weekly. | Yes                 | Meeting         | Meetup                 | 07/06/2017            | Linda DeCastro | Pending     |             | Johnny Gonzalez |
+| 61c0f751333f060721564c8b | 07/02/2017 | Want to be sure to communicate weekly. | No                  | Meeting         | Meetup                 | 07/06/2017            | Linda DeCastro | Pending     |             | Johnny Gonzalez |
 
 ## Update Records
 
@@ -250,7 +250,7 @@ record in the previous example. We can do that in the following way:
 
 ``` r
 update_records("object_2",
-               "61c0f751333f060721564c85",
+               "61c0f751333f060721564c8b",
                data.frame(add_task_or_meeting = "Yes"))
 #> [1] "Success: (200) OK"
 ```
@@ -288,7 +288,7 @@ retrieve_records("object_2",
   record_3
 
 delete_records("object_2",
-               "61c0f751333f060721564c85")
+               "61c0f751333f060721564c8b")
 #> [1] "Success: (200) OK"
 ```
 
@@ -302,15 +302,14 @@ retrieve_records("object_2",
   kable()
 ```
 
-| id                       | date       | notes                                  | add_task_or_meeting | task_or_meeting | tasks_or_meeting_types | task/meeting_due_date | contact        | task_status | task_update | sales_rep       |
-|:-------------------------|:-----------|:---------------------------------------|:--------------------|:----------------|:-----------------------|:----------------------|:---------------|:------------|:------------|:----------------|
-| 61e08ee5b3a1c7a44a6f825f | 06/13/2017 | Demo went really well                  | Yes                 | Meeting         | Tech Demo              |                       | Linda DeCastro | Completed   |             | Johnny Gonzalez |
-| 61e08586100f415129d8f8f7 | 06/30/2017 | Updated pipeline status to “Proposal”  | Yes                 |                 |                        | 12/20/2021 4:36pm     | Linda DeCastro | Pending     |             | Johnny Gonzalez |
-| 61c0f751333f060721564c8b | 07/02/2017 | Want to be sure to communicate weekly. | Yes                 | Meeting         | Meetup                 | 07/06/2017            | Linda DeCastro | Pending     |             | Johnny Gonzalez |
+| id                       | date       | notes                                 | add_task_or_meeting | task_or_meeting | tasks_or_meeting_types | task/meeting_due_date | contact        | task_status | task_update | sales_rep       |
+|:-------------------------|:-----------|:--------------------------------------|:--------------------|:----------------|:-----------------------|:----------------------|:---------------|:------------|:------------|:----------------|
+| 61e08ee5b3a1c7a44a6f825f | 06/13/2017 | Demo went really well                 | Yes                 | Meeting         | Tech Demo              |                       | Linda DeCastro | Completed   |             | Johnny Gonzalez |
+| 61e08586100f415129d8f8f7 | 06/30/2017 | Updated pipeline status to “Proposal” | Yes                 |                 |                        | 12/20/2021 4:36pm     | Linda DeCastro | Pending     |             | Johnny Gonzalez |
 
 You can also delete many records at once using `sapply`. Suppose you had
-a vector of record ids you wanted to delete; let’s call it
-`duplicated_ids`. You can delete them like so:
+a vector of record ids you wanted to delete called `duplicated_ids`. You
+can delete them all like so:
 
 ``` r
 # Not run
@@ -324,7 +323,7 @@ sapply(duplicated_ids, function(x){
 Lastly, you can create new records using the `create_records` function.
 You provide the object number and a data frame of new records where the
 column names match the field labels in the object. For example, let’s
-put back the record that we delete earlier but saved in the data frame
+put back the record that we deleted earlier but saved in the data frame
 `record_3`.
 
 ``` r
@@ -353,10 +352,9 @@ retrieve_records("object_2",
 
 | id                       | date       | notes                                  | add_task_or_meeting | task_or_meeting | tasks_or_meeting_types | task/meeting_due_date | contact        | task_status | task_update | sales_rep       |
 |:-------------------------|:-----------|:---------------------------------------|:--------------------|:----------------|:-----------------------|:----------------------|:---------------|:------------|:------------|:----------------|
-| 61e09006aebd633c315ea285 | 07/02/2017 | Want to be sure to communicate weekly. | Yes                 | Meeting         | Meetup                 | 07/06/2017 12:00am    | Linda DeCastro | Pending     |             | Johnny Gonzalez |
+| 61e092ba2010433bc016c584 | 07/02/2017 | Want to be sure to communicate weekly. | Yes                 | Meeting         | Meetup                 | 07/06/2017 12:00am    | Linda DeCastro | Pending     |             | Johnny Gonzalez |
 | 61e08ee5b3a1c7a44a6f825f | 06/13/2017 | Demo went really well                  | Yes                 | Meeting         | Tech Demo              |                       | Linda DeCastro | Completed   |             | Johnny Gonzalez |
 | 61e08586100f415129d8f8f7 | 06/30/2017 | Updated pipeline status to “Proposal”  | Yes                 |                 |                        | 12/20/2021 4:36pm     | Linda DeCastro | Pending     |             | Johnny Gonzalez |
-| 61c0f751333f060721564c8b | 07/02/2017 | Want to be sure to communicate weekly. | Yes                 | Meeting         | Meetup                 | 07/06/2017            | Linda DeCastro | Pending     |             | Johnny Gonzalez |
 
 Now with a new record id.
 
