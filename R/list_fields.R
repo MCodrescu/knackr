@@ -49,7 +49,7 @@ list_fields <- function(object, details = FALSE) {
 
   # Return details if desired
   if (details) {
-    return (data)
+    return (data[[1]])
   } else {
     return(data$fields[c(1, 2, 4)])
   }

@@ -83,7 +83,7 @@ retrieve_records <-
 
     # Get all fields
     fields <- list_fields(object)
-    fields_detailed <- list_fields(object, details = TRUE)[[1]]
+    fields_detailed <- list_fields(object, details = TRUE)
 
     # Retrieve the column names and keys
     column_labels <- fields$label
@@ -131,7 +131,7 @@ retrieve_records <-
     })
 
     # Change filter fields of connected records to their id
-    if (filter_field != "") {
+    if (any(filter_field != "")) {
       filter_field <- c(filter_field)
       for (i in 1:length(filter_field)) {
         fields_detailed %>%

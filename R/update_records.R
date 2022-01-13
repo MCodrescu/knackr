@@ -38,7 +38,7 @@ update_records <- function(object, record_id, data) {
 
   # Get all fields
   fields <- list_fields(object)
-  fields_detailed <- list_fields(object, details = TRUE)[[1]]
+  fields_detailed <- list_fields(object, details = TRUE)
 
   # Retrieve the column names and keys
   column_labels <- fields$label

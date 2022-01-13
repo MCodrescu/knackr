@@ -21,7 +21,7 @@ opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of knackr is to facilitate the interaction with the [Knack](https://www.knack.com/) API.
+The goal of knackr is to facilitate interaction with Knack Databases using the [Knack](https://www.knack.com/) API.
 
 ## Installation
 
@@ -52,7 +52,7 @@ list_objects() %>%
 
 ## List Fields
 
-You can also list the fields present in an object using `list_fields(object)` or list every field in the database using `sapply`.
+You can also list the fields present in an object using `list_fields(object)` or list every field in the database using `sapply`. `list_fields` will automatically change field labels to under case without white space.
 
 ``` {r list-fields}
 # List fields of a single object
@@ -64,44 +64,150 @@ objects <- list_objects()
 database <- sapply(objects$key, list_fields)
 ```
 ## Retrieve Records
-You can retrieve records from the database using `retrieve_records`. By default, `retrieve_records` returns the entire object but you can specify a subset of the data using filters. For a complete list of possible filters refer to the [Knack Documentation](https://docs.knack.com/docs/filters-field-types).
+You can retrieve records from the database using `retrieve_records`. By default, `retrieve_records` returns the entire object but you can specify a subset of the data using filters or limit the total number of records retrieved. For a complete list of possible filters refer to the [Knack Documentation](https://docs.knack.com/docs/filters-field-types).
 
 ```{r retrieve-all}
-# Retrieve all records from an object
-retrieve_records("object_2") %>%
-  head() %>%
+# Retrieve the first 10 records from an object
+retrieve_records("object_2", limit = 10) %>%
   kable()
 ```
 ### Retrieve records according to a single condition.
-This example retrieves only those records that contain the word 'Updated' in field 2.
+This example retrieves only those records that contain the word 'Updated' in the `notes` field. 
 ```{r filter1}
 retrieve_records("object_2",
-                  filter_field = "field_2",
-                  operator = "contains",
-                  value = "Updated") %>%
+                 "notes",
+                 "Updated",
+                 "contains") %>%
   kable()
 ```
 ### Retrieve records within a data range. 
-This example retrieves only records with dates in field 34 between July 1, 2017 and August 31, 2017. Note that dates must be in the 'YYYY-MM-DD' format.
+This example retrieves only records with dates in the `date` field between July 1, 2017 and August 31, 2017. 
 
 ```{r filter2}
 retrieve_records("object_2",
-                  filter_field = "field_34",
-                  operator = c("is after","is before"),
-                  value = c('2017-07-01','2021-08-31')) %>%
+                 c("date", "date"),
+                 c('2017-07-01', '2021-08-31'),
+                 c("is after", "is before")) %>%
   kable()
 ```
 ### Retrieve records according to multiple field conditions
-This example retrieves records according to two conditions: field 35 is 'No' and field 34 is after July 1, 2017. You can substitute 'and' with 'or' if you would like at least one condition to be true and not all.
+This example retrieves records according to two conditions: `add_task_or_meeting` is 'No' and `date` is after July 1, 2017. You can substitute 'and' with 'or' if you would like at least one condition to be true and not all.
 ```{r filter3}
 retrieve_records("object_2",
-                  filter_field = c("field_35","field_34"),
-                  match = "and",
-                  operator = c("is","is after"),
-                  value = c("No","2017-07-01")) %>%
+                 c("add_task_or_meeting","date"),
+                 c("No","2017-07-01"),
+                 c("is","is after"),
+                 match = "or") %>%
   kable()
 ```
 
+### Retrieve connected records
+You can also set filters according to connected record fields without a problem. Notice that field 22, `contact`, is a connection. We can see what object it connects to using `list_fields("object_2", details = TRUE)` and the `unnest` function from the `tidyr` package.
 
+```{r filter4}
+list_fields("object_2", details = TRUE) %>%
+  tidyr::unnest(relationship) %>% 
+  kable()
+```
+
+We can see that `contact` connects with object_1. We can retrieve the records of object_1 to see what it holds.
+
+```{r filter5}
+retrieve_records("object_1") %>%
+  kable()
+```
+
+We can now use any of the above fields when we create filters for object_2. For example, let's search object 2 for only those records connected to 'Linda DeCastro'.
+
+```{r filter6}
+retrieve_records("object_2",
+                 "contact",
+                 "Linda DeCastro") %>%
+  kable()
+```
+
+## Update Records
+We can update records in the knack database using the `update_records` function. We supply the object number, record id, and a data frame of new values to update. For example, suppose we want to change the last record in the previous example. We can do that in the following way:
+
+```{r update1}
+update_records("object_2",
+               "61c0f751333f060721564c85",
+               data.frame(add_task_or_meeting = "Yes"))
+```
+The result is an http status message. We see that the update was successful but let's pull the record again to double check.
+
+```{r update2}
+retrieve_records("object_2",
+                 "contact",
+                 "Linda DeCastro") %>%
+  kable()
+```
+
+We can see that the `add_task_or_meeting` column of the last record was changed successfully.
+
+## Delete Records
+We can delete records using the `delete_records` function. We simply provide the object number and record id we want to delete. Let's delete the record above that we just modified.
+
+```{r delete1}
+# Make a copy of the record
+retrieve_records("object_2",
+                 "contact",
+                 "Linda DeCastro")[3,] ->
+  record_3
+
+delete_records("object_2",
+               "61c0f751333f060721564c85")
+
+```
+We can retrieve the records again to see that it was successfully deleted.
+
+```{r delete2}
+retrieve_records("object_2",
+                 "contact",
+                 "Linda DeCastro") %>%
+  kable()
+```
+You can also delete many records at once using `sapply`. Suppose you had a vector of record ids you wanted to delete; let's call it `duplicated_ids`. You can delete them like so:
+
+```{r delete3, eval = FALSE}
+# Not run
+sapply(duplicated_ids, function(x){
+  delete_records("object_#", x)
+})
+```
+
+## Create Records
+Lastly, you can create new records using the `create_records` function. You provide the object number and a data frame of new records where the column names match the field labels in the object. For example, let's put back the record that we delete earlier but saved in the data frame `record_3`.
+
+```{r create1}
+kable(record_3[,2:11])
+```
+
+
+```{r create2}
+create_records("object_2",
+               record_3[,2:11])
+```
+We can retrieve the records again to see that it was successfully put back.
+
+```{r create3}
+retrieve_records("object_2",
+                 "contact",
+                 "Linda DeCastro") %>%
+  kable()
+```
+
+Now with a new record id. 
+
+### Creating many records at once.
+You can use the `create_records` function with an arbitrarily large data frame of new records, but the more records created, the longer the function takes to finish. 
+
+The `create_records` function calls the Knack API for each new record and waits for a response before proceeding to the next record. I have considered updating this function to utilize asynchronous API calls but in the end decided not to. Asynchronous API calls would allow for the function to continue uploading records in the background while opening up the R console for use in the meantime. If you think this would be a good feature to add, please let me know!
+
+## Conclusion
+I hope you enjoy this package and please let me know your suggestions for how to improve it! 
+
+### Acknowledgements
+I built this package with guidance from Hadley Wickham's book [Building R Packages](https://r-pkgs.org/). The `knackr` package utilizes the `httr`, `jsonlite`, `dplyr`, `magrittr`, `stringr`, and `utils` packages. 
 
 
