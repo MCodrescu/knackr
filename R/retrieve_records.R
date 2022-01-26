@@ -40,28 +40,23 @@
 #' # Retrieve all records from an object
 #' retrieve_records("object_23")
 #'
-#' # Retrieve records according to a single condition
-#' retrieve_records("object_23",
-#'                   filter_field = "field_169",
-#'                   operator = "is lower than",
-#'                   value = 2
-#'                   )
+#' # You can quick retrieve records according to a single condition
+#' retrieve_records("object_23", "job_no", "0121-023")
 #'
 #' # Retrieve records within a date range
 #' # Note that dates must be in 'YYYY-MM-DD' format
 #' retrieve_records("object_23",
-#'                   filter_field = "field_170",
-#'                   operator = c("is after","is before"),
-#'                   value = c('2021-12-01','2021-12-30'))
+#'                   "date",
+#'                   c('2021-12-01','2021-12-30'),
+#'                   c("is after","is before"))
 #'
 #'
 #' # Retrieve records according to multiple field conditions
-#' # Note that connected records must be searched by id
 #' retrieve_records("object_23",
-#'                   filter_field = c("field_210","field_227"),
-#'                   operator = c("contains","is"),
-#'                   value = c("Monday","60b1a7696cee6c001f5cc3d7")
-#'                   )
+#'                   c("day_of_week","hours_worked", "account"),
+#'                   c("Monday",5, "Marcus")
+#'                   c("is","is greater than", "contains"))
+#'
 #' }
 #'
 retrieve_records <-
@@ -208,6 +203,12 @@ retrieve_records <-
     )
     n_pages <- fromJSON(content(result, as = "text"))$total_pages
     data <- fromJSON(content(result, as = "text"))$records
+
+
+    # If no data, return a warning
+    if (length(data) == 0){
+      return ("No data retrieved according to filters specified")
+    }
 
     # If there is only one page then stop
     if (n_pages == 1 | limit < 1000) {
