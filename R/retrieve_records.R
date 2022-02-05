@@ -31,6 +31,7 @@
 #' @importFrom dplyr bind_rows
 #' @importFrom dplyr filter
 #' @importFrom dplyr pull
+#' @importFrom utils adist
 #'
 #' @return A data frame of filtered records.
 #' @export
@@ -133,6 +134,23 @@ retrieve_records <-
           filter(key == filter_field[i]) %>%
           pull(type) ->
           type
+
+        # Filter field not found
+        # Determine most likely intended field
+        string_dist <- adist(filter_field[i], column_labels)
+        min_dist <- min(string_dist)
+        most_likely <- column_labels[string_dist == min_dist]
+        if (length(type) == 0) {
+          return (paste0(
+            filter_field[i],
+            " is not present in ",
+            object,
+            ". Did you mean ",
+            most_likely,
+            "?")
+          )
+        }
+
 
 
         if (type == "connection") {
