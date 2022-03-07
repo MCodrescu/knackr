@@ -24,14 +24,19 @@
 #' @importFrom stringr str_replace_all
 #' @importFrom stringr str_to_lower
 #' @importFrom stringr str_extract
+#' @importFrom stringr str_c
+#' @importFrom stringr str_remove
 #' @importFrom utils URLencode
 #' @importFrom dplyr select
 #' @importFrom dplyr mutate_all
 #' @importFrom dplyr contains
+#' @importFrom dplyr any_of
 #' @importFrom dplyr bind_rows
+#' @importFrom dplyr rename_with
 #' @importFrom dplyr filter
 #' @importFrom dplyr pull
 #' @importFrom utils adist
+#' @importFrom tidyr unnest
 #'
 #' @return A data frame of filtered records.
 #' @export
@@ -80,10 +85,13 @@ retrieve_records <-
     # Get all fields
     fields <- list_fields(object)
     fields_detailed <- list_fields(object, details = TRUE)
+    connected_fields <- filter(fields_detailed, type == 'connection')
 
     # Retrieve the column names and keys
     column_labels <- fields$label
     column_keys <- fields$key
+    connected_fields_raw_keys <- paste0(connected_fields$key,"_raw")
+    connected_fields_keys <- connected_fields$key
 
     # Get the label length of columns
     label_length <- length(column_labels)
@@ -99,16 +107,6 @@ retrieve_records <-
              object,
              "/records?rows_per_page=",
              limit)
-
-    # Create a function to clean html tags
-    dropHTMLTags <- function(column) {
-      if (any(grepl(">.+<", column))) {
-        result <- str_remove_all(str_extract(column, ">.+<"), "[><]")
-      } else {
-        result <- column
-      }
-      result
-    }
 
     # Change dates to correct format
     try(sapply(value, function(x) {
@@ -234,10 +232,20 @@ retrieve_records <-
       if (include_raw) {
         return (data)
       }
+
+      # Unnest the data
+      for (c in connected_fields_raw_keys){
+        data %>%
+          unnest(c,
+                 names_sep = "_") ->
+          data
+      }
+
       # Return the cleaned data
       clean_data <- data %>%
-        select(!contains("raw")) %>%
-        mutate_all(dropHTMLTags)
+        rename_with(~ str_c(.x, "_raw"), any_of(connected_fields_keys)) %>%
+        rename_with(~ str_remove(.x, "_raw_identifier"), contains("identifier")) %>%
+        select(!contains("raw"))
 
       # Determine number of columns
       columns_raw <- colnames(clean_data)
@@ -269,10 +277,20 @@ retrieve_records <-
     if (include_raw) {
       return (data)
     } else {
+
+      # Unnest the data
+      for (c in connected_fields_raw_keys){
+        data %>%
+          unnest(c,
+                 names_sep = "_") ->
+          data
+      }
+
       # Return the cleaned data
       clean_data <- data %>%
-        select(!contains("raw")) %>%
-        mutate_all(dropHTMLTags)
+        rename_with(~ str_c(.x, "_raw"), any_of(connected_fields_keys)) %>%
+        rename_with(~ str_remove(.x, "_raw_identifier"), contains("identifier")) %>%
+        select(!contains("raw"))
 
       # Determine number of columns
       columns_raw <- colnames(clean_data)
