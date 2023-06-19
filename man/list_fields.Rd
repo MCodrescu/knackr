@@ -2,29 +2,16 @@
 % Please edit documentation in R/list_fields.R
 \name{list_fields}
 \alias{list_fields}
-\title{List Fields of a Knack Object}
+\title{List Fields and Data Types of a Knack Object}
 \usage{
-list_fields(object, details = FALSE)
+list_fields(table_name)
 }
 \arguments{
-\item{object}{A string containing the knack object to retrieve fields from. Ex: 'object_23'}
-
-\item{details}{A logical value saying whether to include all details.}
+\item{table_name}{The name of the table to query.}
 }
 \value{
-A data frame containing descriptions of fields in a Knack object
+A data frame containing descriptions of fields.
 }
 \description{
-List Fields of a Knack Object
-}
-\examples{
-\dontrun{
-# List fields of a single object
-list_fields("object_23")
-
-# List fields of every object
-objects <- list_objects()
-sapply(objects$key, list_fields)
-}
-
+List Fields and Data Types of a Knack Object
 }

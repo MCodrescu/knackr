@@ -12,6 +12,3 @@ A data frame listing the Knack Objects (i.e. Tables) available in the Knack Data
 \description{
 List Knack Objects
 }
-\examples{
-tail(list_objects())
-}

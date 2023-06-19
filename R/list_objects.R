@@ -8,13 +8,11 @@
 #' @return A data frame listing the Knack Objects (i.e. Tables) available in the Knack Database
 #' @export
 #'
-#' @examples
-#' tail(list_objects())
 list_objects <- function() {
   # Check to see if Knack API credentials are set
   if (is.null(getOption("api_id")) |
       is.null(getOption("api_key"))) {
-    return (print("Please set API credentials using set_credentials."))
+    stop("Please set API credentials using set_credentials.")
   }
 
   # Retrieve Objects

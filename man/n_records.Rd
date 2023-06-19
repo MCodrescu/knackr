@@ -4,19 +4,14 @@
 \alias{n_records}
 \title{Determine the Number of Records in an Object}
 \usage{
-n_records(object)
+n_records(table_name)
 }
 \arguments{
-\item{object}{A string containing the object number. Ex: 'object_2'}
+\item{table_name}{A string containing the table name.}
 }
 \value{
 An integer representing the number of records in the object.
 }
 \description{
 Determine the Number of Records in an Object
-}
-\examples{
-\dontrun{
-n_records('object_2')
-}
 }

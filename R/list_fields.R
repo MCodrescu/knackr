@@ -1,57 +1,41 @@
-#' List Fields of a Knack Object
+#' List Fields and Data Types of a Knack Object
 #'
-#' @param object A string containing the knack object to retrieve fields from. Ex: 'object_23'
-#' @param details A logical value saying whether to include all details.
+#' @param table_name The name of the table to query.
 #'
-#' @return A data frame containing descriptions of fields in a Knack object
+#' @importFrom httr GET
+#' @importFrom httr add_headers
+#' @importFrom httr content
+#' @importFrom jsonlite fromJSON
+#'
+#' @return A data frame containing descriptions of fields.
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#' # List fields of a single object
-#' list_fields("object_23")
-#'
-#' # List fields of every object
-#' objects <- list_objects()
-#' sapply(objects$key, list_fields)
-#' }
-#'
-list_fields <- function(object, details = FALSE) {
+list_fields <- function(
+    table_name
+){
   # Check to see if Knack API credentials are set
   if (is.null(getOption("api_id")) |
       is.null(getOption("api_key"))) {
-    return (print("Please set API credentials using set_credentials."))
+    stop("Please set API credentials using set_credentials.")
   }
 
-  # Set API base url
-  api_url <-
-    paste0("https://api.knack.com/v1/objects/", object, "/fields")
+  all_objects <- list_objects()
+  table_key <- all_objects$key[which(all_objects$name == table_name)]
+
+  api_url <- paste0(
+    "https://api.knack.com/v1/objects/",
+    table_key,
+    "/fields"
+  )
 
   # Retrieve Objects
-  response <-
-    GET(
-      api_url,
-      add_headers(
-        "X-Knack-Application-Id" = getOption("api_id"),
-        "X-Knack-REST-API-Key" = getOption("api_key")
-      )
+  response <- httr::GET(
+    api_url,
+    httr::add_headers(
+      "X-Knack-Application-Id" = getOption("api_id"),
+      "X-Knack-REST-API-Key" = getOption("api_key")
     )
-  data <-
-    (fromJSON(content(
-      response, type = "text", encoding = "UTF-8"
-    )))
+  )
 
-
-  column_labels <-
-    str_replace_all(str_to_lower(data$fields$label), " ", "_")
-
-  data$fields$label <- column_labels
-
-  # Return details if desired
-  if (details) {
-    return (data[[1]])
-  } else {
-    return(data$fields[c(1, 2, 4)])
-  }
-
+  jsonlite::fromJSON(httr::content(response, type = "text", encoding = "UTF-8"))$fields
 }
